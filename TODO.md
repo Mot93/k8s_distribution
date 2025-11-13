@@ -1,7 +1,7 @@
-# Work to be done
+# TODO
 Traking issues and missing features
 
-## TODO
+## Features
 - Documentation has to be expanded
 - Rather than stop if there is a problem in downloading or uploading, it's more efficient to log what wasn't downloaded (and consequentely uploaded) and continue with the list
     - Add a feature to exlude element to upload or to target only specific element. This way it's not necessary to rewrite the list and the process can target specific items

@@ -63,8 +63,6 @@ Configurations file:
 
 ## Container
 Download all specified containers.
-Each chart can be uploaded to a registy with a prefix.
-Using the Makefile withouth setting the `CHART_PREFIX` variable, all the charts will use `charts` as a prefix.
 Configurations file:
 ```json
 {
@@ -75,9 +73,7 @@ Configurations file:
         }
     ],
     "repos": [
-        {  // helm repo add $name $url
-            "name": "Name used by helm when calling the repo",
-            "url": "URL of the repos from where to download",
+        {
             "auth": "(Optional) Authentication command launched before. CAREFULL there are no checks onwhat is runned"
         }
     ],
