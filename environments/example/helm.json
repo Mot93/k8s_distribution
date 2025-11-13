@@ -1,0 +1,34 @@
+{
+    "destinations": [
+        {
+            "url": "oci://your.helm.repo/something",
+            "auth": "echo 'Athenticated to xxx1'"
+        },
+        {
+            "url": "https://its.helm.repo/something"
+        }
+    ],
+    "repos": [
+        {
+            "name": "bitnami",
+            "url": "https://charts.bitnami.com/bitnami",
+            "auth": "echo 'Athenticated to bitnami'"
+        },
+        {
+            "name": "hashicorp",
+            "url": "https://helm.releases.hashicorp.com"
+        }
+    ],
+    "charts": [
+        {
+            "name": "external-dns",
+            "version": "9.0.3",
+            "repo": "bitnami"
+        },
+        {
+            "name": "vault-secrets-operator",
+            "version": "1.0.1",
+            "repo": "hashicorp"
+        }
+    ]
+}

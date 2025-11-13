@@ -1,0 +1,3 @@
+# Ingnore directories that are used only locally
+*.tmp/*
+*logs/*

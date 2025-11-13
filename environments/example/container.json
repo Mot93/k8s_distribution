@@ -1,0 +1,20 @@
+{
+    "destinatios": [
+        {
+            "url": "oci://your.helm.repo/something",
+            "auth": "echo 'Athenticated to xxx1'"
+        }
+    ],
+    "repos": [
+        {
+            "auth": "echo 'Athenticated to xxx2'"
+        }
+    ],
+    "containers": [
+        { 
+            "name": "xxx",
+            "tag": "xxx",
+            "registry": "xxx"
+        }
+    ]
+}
