@@ -1,0 +1,12 @@
+# List of destinations where to ship the containers
+destinations:
+  - "dest1"
+  - "dest2"
+# List of containers to ship
+containers:
+  - name: "container1"
+    tag: "tag1"
+    registry: "reg1"
+  - name: "container2"
+    tag: "tag2"
+    registry: "reg2"
