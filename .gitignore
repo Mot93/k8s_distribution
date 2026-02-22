@@ -1,4 +1,3 @@
-# Ingnore directories that are used only locally
+# Ingnore temporary folders and logs file
 *.tmp/*
-*logs/*
-environments/*/logs
+*.log

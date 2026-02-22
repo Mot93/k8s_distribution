@@ -1,13 +1,18 @@
 #!/bin/bash
 
-source=./config.env
+# Example usage
+# log "INFO" "Script started" "log_file.log"
 
 # Log function
 log() {
+    if [ ! $# -ge 3 ]; then
+        echo "ERROR: 3 argument are required: level message log_file"
+        exit 1
+    fi
     # Get level, message and file where to store
     local level=$1
     local message=$2
-    local log_file="logs/example.log"
+    local log_file=$3
     # Config logs
     local timestamp=$(date +'%Y-%m-%d %H:%M:%S')
     local log_entry="[$timestamp] [$level] $message"
@@ -44,8 +49,5 @@ log() {
     # Print to log file (no color)
     echo "$log_entry" >> "$log_file"
 }
-
-# Example usage
-#log "INFO" "Script started" "logfile.txt"
 
 export -f log
