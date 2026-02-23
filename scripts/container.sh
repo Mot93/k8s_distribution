@@ -15,10 +15,10 @@ log_file="$LOG_DIR/error-$timestamp.log"
 # Check if at least one argument is provided
 env=""
 if [ $# -ge 1 ]; then
-    env=$1
+  env=$1
 else
-    log "ERROR" "The environment wasn't passed" $log_file
-    exit 1
+  log "ERROR" "The environment wasn't passed" $log_file
+  exit 1
 fi
 
 # Environment
@@ -46,8 +46,8 @@ log "INFO" "Config file found: $config_file" $log_file
 destinations_field=".destinations"
 destinations=$(yq $destinations_field[] $config_file)
 if [ -z "$destinations" ]; then
-    log "ERROR" "List not found at path '$destinations_field' in $config_file." $log_file
-    exit 1
+  log "ERROR" "List not found at path '$destinations_field' in $config_file." $log_file
+  exit 1
 fi
 # Check there is at least one destination
 destinations_count=$(yq "$destinations_field | length" $config_file)
@@ -58,10 +58,7 @@ fi
 
 log "INFO" "Found $destinations_count destinations." $log_file
 
-# for dest in $destinations; do
-#     echo "Destination: $dest"
-# done
-
+# TODO: required fields check
 # required_char=("name" "tag" "registry")
 
 # Read the list of containers to ship
@@ -90,30 +87,55 @@ for ((i=0; i<containers_count; i++)); do
   origin_container="$registry/$name:$tag"
   # Pull
   pull="docker pull $origin_container"
-  # eval $pull
-  # exit_code=$?
-  # if [ ! $exit_code -eq 0 ]; then
-  #   log "ERROR" "Couldn't pull $origin_container" $log_file
-  #   continue
-  # fi
+  eval $pull
+  exit_code=$?
+  if [ ! $exit_code -eq 0 ]; then
+    log "ERROR" "Couldn't pull $origin_container" $log_file
+    continue
+  fi
   log "INFO" "Pulled container $origin_container" $log_file
   # Loop over all destinations
   for dest in $destinations; do
     # Destination container
     dest_container="$dest/$name:$tag"
-    # TODO: tag
-    # tag="docker tag $origin_container $dest_container"
-    # eval $tag
-    # exit_code=$?
-    # if [ ! $exit_code -eq 0 ]; then
-    #   log "ERROR" "Couldn't tag $origin_container into $dest_container" $log_file
-    #   continue
-    # fi
-    # TODO: push
-    # TODO: delete destination
+    # Tag
+    tagging="docker tag $origin_container $dest_container"
+    echo $tagging
+    eval $tagging
+    exit_code=$?
+    if [ ! $exit_code -eq 0 ]; then
+      log "ERROR" "Couldn't tag $origin_container into $dest_container" $log_file
+      continue
+    fi
+    log "INFO" "Tagged container $origin_container into $dest_container" $log_file
+    # Push
+    push="docker push $dest_container"
+    eval $push
+    exit_code=$?
+    if [ ! $exit_code -eq 0 ]; then
+      log "ERROR" "Couldn't push $dest_container" $log_file
+      continue
+    fi
+    log "INFO" "Pushed container $dest_container" $log_file
+    # Delete destination
+    delete="docker image rm $dest_container"
+    eval $push
+    exit_code=$?
+    if [ ! $exit_code -eq 0 ]; then
+      log "ERROR" "Couldn't delete $dest_container" $log_file
+      continue
+    fi
+    log "INFO" "Delete container $dest_container" $log_file
   done
-  # TODO: delete origin
-  echo deleting
+  # Delete origin
+  delete="docker image rm $origin_container"
+  eval $push
+  exit_code=$?
+  if [ ! $exit_code -eq 0 ]; then
+    log "ERROR" "Couldn't delete $origin_container" $log_file
+    continue
+  fi
+  log "INFO" "Delete container $origin_container" $log_file
 done
 
 log "INFO" "The end." $log_file
