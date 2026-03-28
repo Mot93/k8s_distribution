@@ -1,5 +1,9 @@
 version: '3'
 
+env:
+  DIR_SCRIPTS: "./"
+  DIR_LOGS: "./../logs"
+
 tasks:
 
   default:
@@ -24,5 +28,12 @@ tasks:
     desc: Upload containers
     requires:
       vars:
-        - env
-    cmd: ./container.sh {{.env}}
+        - configs
+    cmd: ./container.sh {{.configs}}
+
+  container:test:
+    desc: Test container Upload
+    cmds:
+      - task: container:upload
+        vars:
+          configs: ./../example
