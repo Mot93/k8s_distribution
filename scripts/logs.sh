@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# set -eu # Exit immediately if any command fails or if an unset variable is used
+set -e # Exit immediately if any command fails
+
 # Logs passed level and message
 # A third argument can be passed as the path to the file where to store logs 
 log() {
@@ -58,10 +61,21 @@ log_file_name() {
         echo "ERROR: 1 argument is required: <name>"
         exit 1
     else
-        file_name="$1"
+        local file_name="$1"
     fi
-    timestamp=$(date +"%Y-%m-%d")
+    local timestamp=$(date +"%Y-%m-%d")
     echo "${file_name}_${timestamp}.log"
 }
 
 export -f log log_file_name
+
+test() {
+    # Config
+    log_file=$(log_file_name "test")
+    # Logs
+    log "INFO" "Logging into the file $log_file" $log_file
+    log "WARNING" "This log won't be recorded anywhere"
+    log "ERROR" "It's RED!"
+    log "SUCCESS" "Youy made it 😎"
+    log "CUSTOM" "We are going off road!! 🚧"
+}
