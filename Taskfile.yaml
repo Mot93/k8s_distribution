@@ -1,0 +1,12 @@
+version: '3'
+
+includes:
+  scripts:
+    taskfile: ./scripts/
+    dir: ./scripts/
+
+tasks:
+
+  default:
+    silent: true
+    cmd: task --list

@@ -1,0 +1,28 @@
+version: '3'
+
+tasks:
+
+  default:
+    silent: true
+    cmd: task --list
+  
+  log:test:
+    desc: Run test for log functions
+    cmds:
+      - source ./logs.sh && test
+
+  helm:upload:
+    desc: Upload helm charts
+    vars:
+      chart_prefix: "charts/"
+    requires:
+      vars:
+        - env
+    cmd: ./helm.sh {{.env}} {{.chart_prefix}}
+
+  container:upload:
+    desc: Upload containers
+    requires:
+      vars:
+        - env
+    cmd: ./container.sh {{.env}}
