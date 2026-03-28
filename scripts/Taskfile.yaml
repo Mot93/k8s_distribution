@@ -16,7 +16,7 @@ tasks:
   log:test:
     desc: Run test for log functions
     cmds:
-      - source ./logs.sh && test
+      - source ./logs.sh && test {{.DIR_LOGS}}
 
   helm:upload:
     desc: Upload helm charts
@@ -34,7 +34,6 @@ tasks:
         vars:
           chart_prefix: "charts/"
           configs: "{{.example_dir}}"
-
 
   container:upload:
     desc: Upload containers
