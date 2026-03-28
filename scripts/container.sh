@@ -53,9 +53,6 @@ fi
 
 log "INFO" "Found $destinations_count destinations." $log_file
 
-# TODO: required fields check
-# required_char=("name" "tag" "registry")
-
 # Read the list of containers to ship
 containers_field=".containers"
 containers=$(yq eval $containers_field $config_file)
@@ -77,7 +74,10 @@ for ((i=0; i<containers_count; i++)); do
   name=$( yq $containers_field[$i].name $config_file )
   tag=$( yq $containers_field[$i].tag $config_file )
   registry=$( yq $containers_field[$i].registry $config_file )
-  # TODO: Check if the atributes exists
+  if [[ "$name" == "null" || "$tag" == "null" || "$registry" == "null" ]]; then
+    log "ERROR" "One or more variables of the element $i in the list \"containers\" are null or unset. name: $name tag: $tag registry: $registry" $log_file
+    exit 1
+  fi
   # Container
   origin_container="$registry/$name:$tag"
   # Pull
