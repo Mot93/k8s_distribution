@@ -34,7 +34,7 @@ log() {
             echo -e "${YELLOW}$log_entry${NC}"
             ;;
         "ERROR")
-            echo -e "${RED}$log_entry${NC}"
+            echo -e "${RED}$log_entry${NC}"  >&2 # Prints to stderr
             ;;
         "SUCCESS")
             echo -e "${GREEN}$log_entry${NC}"
