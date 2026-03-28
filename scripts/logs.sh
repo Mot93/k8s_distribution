@@ -47,16 +47,20 @@ log() {
     # Record the log into a file only if a third argument containing the path to the log has been passed
     if [ $# -ge 3 ]; then
         local log_file=$3
-        # Create directories if they don't exists
-        mkdir -p "$(dirname "$log_file")"
+        local log_dir=$(dirname $log_file)
+        if [ ! -d $log_dir ]; then
+            echo "Directory $log_dir does not exists. Provide existing directory to store log file."
+            exit 1
+        fi
         # Print to log to the specified file (no color)
         echo "$log_entry" >> "$log_file"
     fi
 }
 
+# Given a string with a file name retur the name of a log file
 log_file_name() {
     if [ ! $# -ge 1 ]; then
-        echo "ERROR: 1 argument is required: <name>"
+        log "ERROR" "1 argument is required: <name>"
         exit 1
     else
         local file_name="$1"
@@ -65,15 +69,46 @@ log_file_name() {
     echo "${file_name}_${timestamp}.log"
 }
 
+# Simplify the usage of the log function
+# Before calling these functions, make sure to define log_file
+#   log_file must be a valid path to the file where the log has to be stored
+#   The directory has to exists but not the file
+
+log_info() {
+    log "INFO" "$1" "$log_file"
+}
+
+log_warning() {
+    log "WARNING" "$1" "$log_file"
+}
+
+log_error() {
+    log "ERROR" "$1" "$log_file"
+}
+
+log_success() {
+    log "SUCCESS" "$1" "$log_file"
+}
+
+# Suite of test for the functions defined in this file
 test() {
+    # Check if 
+    if [ ! $# -ge 1 ]; then
+        echo "ERROR: 1 argument is required: <log dir>"
+        exit 1
+    fi
     # Config
-    log_file=$(log_file_name "test")
+    log_file="$1/$(log_file_name "test")"
     # Logs
     log "INFO" "Logging into the file $log_file" $log_file
     log "WARNING" "This log won't be recorded anywhere"
     log "ERROR" "It's RED!"
     log "SUCCESS" "Youy made it 😎"
     log "CUSTOM" "We are going off road!! 🚧"
+    log_info "Info logged with a function"
+    log_warning "Warning logged with a function"
+    log_error "Error logged with a function"
+    log_success "Success logged with a function"
 }
 
 export log log_file_name test
