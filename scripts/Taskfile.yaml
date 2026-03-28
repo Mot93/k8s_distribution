@@ -4,6 +4,9 @@ env:
   DIR_SCRIPTS: "./"
   DIR_LOGS: "./../logs"
 
+vars:
+  example_dir: "./../example"
+
 tasks:
 
   default:
@@ -21,8 +24,17 @@ tasks:
       chart_prefix: "charts/"
     requires:
       vars:
-        - env
-    cmd: ./helm.sh {{.env}} {{.chart_prefix}}
+        - configs
+    cmd: ./helm.sh {{.configs}} {{.chart_prefix}}
+  
+  helm:test:
+    desc: Test helm charts upload
+    cmds: 
+      - task: helm:upload
+        vars:
+          chart_prefix: "charts/"
+          configs: "{{.example_dir}}"
+
 
   container:upload:
     desc: Upload containers
@@ -32,8 +44,8 @@ tasks:
     cmd: ./container.sh {{.configs}}
 
   container:test:
-    desc: Test container Upload
+    desc: Test container upload
     cmds:
       - task: container:upload
         vars:
-          configs: ./../example
+          configs: "{{.example_dir}}"
