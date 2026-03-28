@@ -1,42 +1,37 @@
 #!/bin/bash
 
-source ./config.env
-source $SCRIPTS_DIR/logs.sh
+set -euo pipefail # Exit immediately if any command fails, if an unset variable is used or if any command in the pipeline fails
 
-if [ ! -d "$LOG_DIR" ]; then
-  echo "LOG_DIR $LOG_DIR doesn't exist."
-  exit 1
-fi
+source $DIR_SCRIPTS/logs.sh
 
-# Get the current timestamp in YYYY-MM-DDD format
-timestamp=$(date +"%Y-%m-%d")
-log_file="$LOG_DIR/error-$timestamp.log"
+# Config
+log_file=$(log_file_name "$DIR_LOGS/containers")
 
 # Check if at least one argument is provided
-env=""
 if [ $# -ge 1 ]; then
-  env=$1
+  configs_path=$1
+  if [ ! -d "$configs_path" ]; then
+    log "ERROR" "Directory $configs_path doesn't exists." $log_file
+    exit 2
+  else
+    configs_path=$(realpath $configs_path)
+    configs_name=$(basename "$configs_path")
+    log "INFO" "Config folder name $configs_name" $log_file
+  fi
 else
-  log "ERROR" "The environment wasn't passed" $log_file
-  exit 1
-fi
-
-# Environment
-environment="$ENV_DIR/$env"
-if [ ! -d "$environment" ]; then
-  log "ERROR" "Directory $environment doesn't exists." $log_file
+  log "ERROR" "The configurations folder wasn't passed" $log_file
   exit 1
 fi
 
 # Defining log file
-log_file="$LOG_DIR/$env-$timestamp.log"
+log_file=$(log_file_name "$DIR_LOGS/containers_${configs_name}")
 
-log "INFO" "Working on $environment" $log_file
+log "INFO" "Working on $configs_path" $log_file
 
 # Check if the configuration files exists
-config_file="$environment/containers.yaml"
+config_file="$configs_path/containers.yaml"
 if [ ! -f $config_file ]; then
-  log "ERROR" "The configuration file $config_file does not exists." $log_file
+  log "ERROR" "The configurations file $config_file does not exists." $log_file
   exit 1
 fi
 
@@ -135,7 +130,7 @@ for ((i=0; i<containers_count; i++)); do
     log "ERROR" "Couldn't delete $origin_container" $log_file
     continue
   fi
-  log "INFO" "Delete container $origin_container" $log_file
+  log "INFO" "Deleted container $origin_container" $log_file
 done
 
-log "INFO" "The end." $log_file
+log "SUCCESS" "---> Containers uploaded successfully <---" $log_file
