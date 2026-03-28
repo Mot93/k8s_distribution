@@ -5,6 +5,9 @@ includes:
     taskfile: ./scripts/
     dir: ./scripts/
 
+dotenv:
+  - config.env
+
 tasks:
 
   default:
