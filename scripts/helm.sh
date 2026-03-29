@@ -102,7 +102,7 @@ done
 log "INFO" "Downloaded charts into .tmp folder" $log_file
 
 # Copy local charts to tmp
-local_chart="$configs_path/local"
+local_chart="$configs_path/charts"
 for file in "$local_chart"/*; do
     if [ -f "$file" ]; then
         cp "$file" "$tmp_chart/"
