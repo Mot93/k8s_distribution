@@ -1,40 +1,51 @@
 # K8s offline installation
+
 During my career I had to do "offline installation" on k8s clusters that couldn't reach the internet and could only pull from private registries.
 This repo is a collection of tools ment to help archieve "k8s offline installtions".
 
 ## Makefile
+
 The Makefile it's only a wrapper ment to help launch the bash scripts.
 
 Upload both charts and containers specified in the folder `environments/example`
+
 ```bash
 make upload ENV=example
 ```
 
 Upload containers specified in the folder `environments/example`
+
 ```bash
 make upload_container ENV=example
 ```
 
-Upload charts specified in the folder `environments/example` using `charts` ad a prefix 
+Upload charts specified in the folder `environments/example` using `charts` ad a prefix
+
 ```bash
 make upload_helm ENV=example
 ```
-Upload charts specified in the folder `environments/example` using `foo` ad a prefix 
+
+Upload charts specified in the folder `environments/example` using `foo` ad a prefix
+
 ```bash
 make upload_helm ENV=example CHART_PREFIX=foo
 ```
+
 Upload both charts and container specified in the folder `environments/example` withouth any prefix
+
 ```bash
 make upload_helm ENV=example CHART_PREFIX=""
 ```
 
 ## Helm
+
 Download all specified charts.
 
 Each chart can be uploaded to a registy with a prefix.
 Using the Makefile withouth setting the `CHART_PREFIX` variable, all the charts will use `charts` as a prefix.
 
 Configurations file:
+
 ```json
 {
     "destinations": [
@@ -61,9 +72,37 @@ Configurations file:
 }
 ```
 
+### Useful tips
+
+List all available repos:
+
+```bash
+helm repo list
+```
+
+List all available charts inside across all repos:
+
+```bash
+helm search repo
+```
+
+List all available charts inside a specified repo:
+
+```bash
+helm search repo <repo>
+```
+
+List all available version for a specific chart in the specified repo:
+
+```bash
+helm search repo <repo>/<chart-name> --versions --devel
+```
+
 ## Container
+
 Download all specified containers.
 Configurations file:
+
 ```json
 {
     "destinations": [
