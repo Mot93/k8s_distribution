@@ -6,6 +6,7 @@ Traking issues and missing features.
 
 - [ ] Rather than stop if there is a problem in downloading or uploading, it's more efficient to log what wasn't downloaded (and consequentely uploaded) and continue with the list
 - [ ] Update tasks summaries
+- [ ] Improve README
 
 ## Issues
 
