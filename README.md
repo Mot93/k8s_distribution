@@ -22,7 +22,8 @@ task <task> --summary
 ## Container
 
 Download all specified containers and upload them to the specified registries.
-Configurations file:
+
+Configuration file:
 
 ```yaml
 # List of container registry where to ship the containers
@@ -46,7 +47,7 @@ Given a list of charts download each and uploade the downloaded charts plus the 
 Each chart can be uploaded to a registy with a prefix.
 Using the Makefile withouth setting the `CHART_PREFIX` variable, all the charts will use `charts` as a prefix.
 
-Configurations file:
+Configuration file:
 
 ```yaml
 # List of chart registry where to ship the helm charts
