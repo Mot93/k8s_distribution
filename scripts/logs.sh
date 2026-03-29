@@ -105,10 +105,10 @@ test() {
     log "ERROR" "It's RED!"
     log "SUCCESS" "Youy made it 😎"
     log "CUSTOM" "We are going off road!! 🚧"
-    log_info "Info logged with a function"
-    log_warning "Warning logged with a function"
-    log_error "Error logged with a function"
-    log_success "Success logged with a function"
+    log_info "Info logged with log_info ℹ️"
+    log_warning "Warning logged with a function ⚠️"
+    log_error "Error logged with a function ⛔️"
+    log_success "Success logged with a function ✅"
 }
 
 export log log_file_name test
