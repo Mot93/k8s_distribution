@@ -1,4 +1,4 @@
-# List of destinations where to ship the containers
+# List of container registry where to ship the containers
 destinations:
   - "docker.io/dancingcactus93"
 # List of containers to ship

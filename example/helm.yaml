@@ -1,4 +1,4 @@
-# List of destinations where to ship the containers
+# List of chart registry where to ship the helm charts
 destinations:
   - "docker.io/dancingcactus93"
 # List of charts to ship
