@@ -1,3 +1,4 @@
 # Ingnore temporary folders and logs file
 *.tmp/*
 *.log
+*.tmp

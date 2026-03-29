@@ -89,13 +89,14 @@ for ((i=0; i<charts_count; i++)); do
       log_error "One or more variables of the element $i in the list \"charts\" are null or unset. name: $name version: $version repo: $repo"
       exit 1
     fi
-    pull="helm pull $repo/$name --version $version --destination $tmp_chart"
+    pull="helm pull $name --repo $repo --version $version --destination $tmp_chart"
     log_info "$pull"
     eval $pull
     exit_code=$?
     if [ ! $exit_code -eq 0 ]; then
-      log_error "Could not pull chart "
+      log_error "Could not pull the chart"
     fi
+    log_info "Chart $name pulled"
 done
 
 log "INFO" "Downloaded charts into .tmp folder" $log_file
@@ -108,16 +109,24 @@ for file in "$local_chart"/*; do
     fi
 done
 
-log "INFO" "Downloaded charts into .tmp folder" $log_file
+log "INFO" "Copied local charts into .tmp folder" $log_file
 
 # Upload all the charts from the tmp folder
 for file in "$tmp_chart"/*; do   
     yq -c '.destinations[]' $config_file | while read -r item; do
         url=$(echo "$item" | yq -r '.url')
-        echo "push $file $url$prefix"
-        helm push $file $url$prefix
+        push="helm push $file $url$prefix"
+        log_info "$push"
+        eval $push
+        exit_code=$?
+        if [ ! $exit_code -eq 0 ]; then
+          log_error "Could not push the chart "
+        fi
+        log_info "Uploaded chart $file"
     done
 done
 
 # Removing tmp folder
 rm -rf $tmp_chart
+
+log_success "---> Charts uploaded <---"
