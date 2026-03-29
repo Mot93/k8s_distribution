@@ -3,73 +3,65 @@
 During my career I had to do "offline installation" on k8s clusters that couldn't reach the internet and could only pull from private registries.
 This repo is a collection of tools ment to help archieve "k8s offline installtions".
 
-## Makefile
+## Taskfile
 
-The Makefile it's only a wrapper ment to help launch the bash scripts.
+The Taskfile it's only a wrapper ment to help launch the bash scripts.
 
-Upload both charts and containers specified in the folder `environments/example`
+To list all the feature available via the Taskfile:
 
-```bash
-make upload ENV=example
+```shell
+task --list
 ```
 
-Upload containers specified in the folder `environments/example`
+To get detail esxplanation of a task:
 
-```bash
-make upload_container ENV=example
+```shell
+task <task> --summary
 ```
 
-Upload charts specified in the folder `environments/example` using `charts` ad a prefix
+## Container
 
-```bash
-make upload_helm ENV=example
-```
+Download all specified containers and upload them to the specified registries.
+Configurations file:
 
-Upload charts specified in the folder `environments/example` using `foo` ad a prefix
-
-```bash
-make upload_helm ENV=example CHART_PREFIX=foo
-```
-
-Upload both charts and container specified in the folder `environments/example` withouth any prefix
-
-```bash
-make upload_helm ENV=example CHART_PREFIX=""
+```yaml
+# List of container registry where to ship the containers
+destinations:
+  - "container registry 1"
+  - "container registry 2"
+# List of containers to ship
+containers:
+  - name: "container 1 name"
+    tag: "container 1 tag"
+    registry: "container 1 registry"
+  - name: "container 2 name"
+    tag: "container 2 tag"
+    registry: "container 2 registry"
 ```
 
 ## Helm
 
-Download all specified charts.
+Given a list of charts download each and uploade the downloaded charts plus the one stored in.
 
 Each chart can be uploaded to a registy with a prefix.
 Using the Makefile withouth setting the `CHART_PREFIX` variable, all the charts will use `charts` as a prefix.
 
 Configurations file:
 
-```json
-{
-    "destinations": [
-        {
-            "url": "URL of the repo where to push charts",
-            "auth": "(Optional) Authentication command launched before. CAREFULL there are no checks onwhat is runned"
-        }
-    ],
-    "repos": [
-        {  // helm repo add $name $url
-            "name": "Name used by helm when calling the repo",
-            "url": "URL of the repos from where to download",
-            "auth": "(Optional) Authentication command launched before. CAREFULL there are no checks onwhat is runned"
-        }
-    ],
-    "charts": [
-        {
-            "name": "Chart name",
-            "version": "Chart version",
-            "repo": "Name of the repo, has to be the same specified in repos list"
-        }
-    ]
+```yaml
+# List of chart registry where to ship the helm charts
+destinations:
+  - "container registry 1"
+  - "container registry 2"
+# List of charts to ship
+charts:
+  - name: "helm chart 1 name"
+    version: "helm chart 1 version"
+    repo: "helm chart 1 repo"
+  - name: "helm chart 2 name"
+    version: "helm chart 2 version"
+    repo: "helm chart 2 repo"
 
-}
 ```
 
 ### Useful tips
@@ -96,33 +88,4 @@ List all available version for a specific chart in the specified repo:
 
 ```bash
 helm search repo <repo>/<chart-name> --versions --devel
-```
-
-## Container
-
-Download all specified containers.
-Configurations file:
-
-```json
-{
-    "destinations": [
-        {
-            "url": "URL of the repo where to push charts",
-            "auth": "(Optional) Authentication command launched before. CAREFULL there are no checks onwhat is runned"
-        }
-    ],
-    "repos": [
-        {
-            "auth": "(Optional) Authentication command launched before. CAREFULL there are no checks onwhat is runned"
-        }
-    ],
-    "charts": [
-        {
-            "name": "Chart name",
-            "version": "Chart version",
-            "repo": "Name of the repo, has to be the same specified in repos list"
-        }
-    ]
-
-}
 ```
