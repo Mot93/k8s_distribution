@@ -1,15 +1,33 @@
 #!/bin/bash
 
-source scripts/error.sh
+set -euo pipefail # Exit immediately if any command fails, if an unset variable is used or if any command in the pipeline fails
 
-# Check if environemnt was passed
-env=""
+source $DIR_SCRIPTS/logs.sh
+
+# Config
+log_file=$(log_file_name "$DIR_LOGS/helm")
+
+# Check if at least one argument is provided
 if [ $# -ge 1 ]; then
-    env=$1
+  configs_path=$1
+  if [ ! -d "$configs_path" ]; then
+    log "ERROR" "Directory $configs_path doesn't exists." $log_file
+    exit 2
+  else
+    configs_path=$(realpath $configs_path)
+    configs_name=$(basename "$configs_path")
+    log "INFO" "Config folder name $configs_name" $log_file
+  fi
 else
-    echo "The environment wasn't passed"
-    exit 1
+  log "ERROR" "The configurations folder wasn't passed" $log_file
+  exit 1
 fi
+
+# Defining log file
+log_file=$(log_file_name "$DIR_LOGS/helm_${configs_name}")
+
+log "INFO" "Working on $configs_path" $log_file
+log_info "Working on $configs_path"
 
 # Check if prefix was passed
 prefix="/"
@@ -17,72 +35,85 @@ if [ $# -ge 2 ]; then
     prefix="/$2"
 fi
 
-# Environment
-environment="environments/$env"
-if [ ! -d "$environment" ]; then
-  echo "Directory $environment does exist."
+log "INFO" "Storing charts with prefix $prefix" $log_file
+
+# Check if the configuration files exists
+config_file="$configs_path/helm.yaml"
+if [ ! -f $config_file ]; then
+  log "ERROR" "The configurations file $config_file does not exists." $log_file
   exit 1
 fi
 
-# JSON with all the configurations
-json_helm="$environment/helm.json"
-if [ ! -f $json_helm ]; then
-   echo "$json_helm is missing"
-   exit 2
+log "INFO" "Config file found: $config_file" $log_file
+
+# Get all the destination where to push charts
+destinations_field=".destinations"
+destinations=$(yq $destinations_field[] $config_file)
+if [ -z "$destinations" ]; then
+  log "ERROR" "List not found at path '$destinations_field' in $config_file." $log_file
+  exit 1
+fi
+# Check there is at least one destination
+destinations_count=$(yq "$destinations_field | length" $config_file)
+if [ $destinations_count -eq 0 ]; then
+  log "ERROR" "There has to be at least 1 destination" $log_file
+  exit 1
 fi
 
-# Error logs
-timestamp=$(date '+%Y%m%d%H%M%S')
-error_file="$environment/logs/helm_$timestamp"
+log "INFO" "Found $destinations_count destinations." $log_file
 
-# Authenticate to each destination repos
-destinations=()
-jq -c '.destinations[]' $json_helm | while read -r item; do
-    auth=$(echo "$item" | jq -r '.auth')
-    url=$(echo "$item" | jq -r '.url')
-    destinations+=( "$url" )
-    if [[ "null" != "$auth" ]] then
-        eval $auth
-    fi
-done
-# Authenticate and add repos hosting helm charts
-jq -c '.repos[]' $json_helm | while read -r item; do
-    name=$(echo "$item" | jq -r '.name')
-    url=$(echo "$item" | jq -r '.url')
-    auth=$(echo "$item" | jq -r '.auth')
-    # Auth if it was specified
-    if [[ "null" != "$auth" ]] then
-        eval $auth
-    fi
-    helm repo add $name $url
-done
-helm repo update
+# Read the list of charts to ship
+charts_field=".charts"
+charts=$(yq eval $charts_field $config_file)
+if [ -z "$destinations" ]; then
+  log "ERROR" "List not found at path '$charts_field' in $config_file." $log_file
+  exit 1
+fi
+# Check there is at least one chart
+charts_count=$(yq e "$charts_field | length" "$config_file")
+if [ $charts_count -eq 0 ]; then
+  log "ERROR" "There has to be at least 1 chart to ship" $log_file
+  exit 1
+fi
 
 # tmp folder where to store all the charts before upload
-tmp_chart="$environment/.tmp"
+tmp_chart="$configs_path/.tmp"
 mkdir -p $tmp_chart
 
 # Download charts
-mkdir -p $tmp_chart
-jq -c '.charts[]' $json_helm | while read -r item; do
-    name=$(echo "$item" | jq -r '.name')
-    version=$(echo "$item" | jq -r '.version')
-    repo=$(echo "$item" | jq -r '.repo')
-    helm pull $repo/$name --version $version --destination $tmp_chart
+for ((i=0; i<charts_count; i++)); do
+    name=$(yq $charts_field[$i].name $config_file)
+    version=$(yq $charts_field[$i].version $config_file)
+    repo=$(yq $charts_field[$i].repo $config_file)
+    if [[ "$name" == "null" || "$version" == "null" || "$repo" == "null" ]]; then
+      log_error "One or more variables of the element $i in the list \"charts\" are null or unset. name: $name version: $version repo: $repo"
+      exit 1
+    fi
+    pull="helm pull $repo/$name --version $version --destination $tmp_chart"
+    log_info "$pull"
+    eval $pull
+    exit_code=$?
+    if [ ! $exit_code -eq 0 ]; then
+      log_error "Could not pull chart "
+    fi
 done
 
+log "INFO" "Downloaded charts into .tmp folder" $log_file
+
 # Copy local charts to tmp
-local_chart="$environment/local"
+local_chart="$configs_path/local"
 for file in "$local_chart"/*; do
     if [ -f "$file" ]; then
         cp "$file" "$tmp_chart/"
     fi
 done
 
-# Upload the charts from the tmp folder
+log "INFO" "Downloaded charts into .tmp folder" $log_file
+
+# Upload all the charts from the tmp folder
 for file in "$tmp_chart"/*; do   
-    jq -c '.destinations[]' $json_helm | while read -r item; do
-        url=$(echo "$item" | jq -r '.url')
+    yq -c '.destinations[]' $config_file | while read -r item; do
+        url=$(echo "$item" | yq -r '.url')
         echo "push $file $url$prefix"
         helm push $file $url$prefix
     done

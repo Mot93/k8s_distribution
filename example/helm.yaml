@@ -1,0 +1,11 @@
+# List of destinations where to ship the containers
+destinations:
+  - "docker.io/dancingcactus93"
+# List of charts to ship
+charts:
+  - name: "nginx-stable/nginx-ingress"
+    version: "latest"
+    repo: "https://helm.nginx.com/stable"
+  # - name: "busybox"
+  #   tag: "latest"
+  #   registry: "docker.io"
