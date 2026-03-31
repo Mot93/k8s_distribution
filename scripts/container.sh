@@ -70,6 +70,7 @@ fi
 log "INFO" "Found $containers_count containers." $log_file
 
 for ((i=0; i<containers_count; i++)); do
+  exit_code=0
   # Getting all the attributes
   name=$( yq $containers_field[$i].name $config_file )
   tag=$( yq $containers_field[$i].tag $config_file )
@@ -82,9 +83,8 @@ for ((i=0; i<containers_count; i++)); do
   origin_container="$registry/$name:$tag"
   # Pull
   pull="docker pull $origin_container"
-  eval $pull
-  exit_code=$?
-  if [ ! $exit_code -eq 0 ]; then
+  eval $pull || exit_code=$?
+  if [ $exit_code -ne 0 ]; then
     log "ERROR" "Couldn't pull $origin_container" $log_file
     continue
   fi
@@ -96,8 +96,7 @@ for ((i=0; i<containers_count; i++)); do
     # Tag
     tagging="docker tag $origin_container $dest_container"
     echo $tagging
-    eval $tagging
-    exit_code=$?
+    eval $tagging || exit_code=$?
     if [ ! $exit_code -eq 0 ]; then
       log "ERROR" "Couldn't tag $origin_container into $dest_container" $log_file
       continue
@@ -105,8 +104,7 @@ for ((i=0; i<containers_count; i++)); do
     log "INFO" "Tagged container $origin_container into $dest_container" $log_file
     # Push
     push="docker push $dest_container"
-    eval $push
-    exit_code=$?
+    eval $push || exit_code=$?
     if [ ! $exit_code -eq 0 ]; then
       log "ERROR" "Couldn't push $dest_container" $log_file
       continue
@@ -114,8 +112,7 @@ for ((i=0; i<containers_count; i++)); do
     log "INFO" "Pushed container $dest_container" $log_file
     # Delete destination
     delete="docker image rm $dest_container"
-    eval $push
-    exit_code=$?
+    eval $push || exit_code=$?
     if [ ! $exit_code -eq 0 ]; then
       log "ERROR" "Couldn't delete $dest_container" $log_file
       continue
@@ -124,8 +121,7 @@ for ((i=0; i<containers_count; i++)); do
   done
   # Delete origin
   delete="docker image rm $origin_container"
-  eval $push
-  exit_code=$?
+  eval $push || exit_code=$?
   if [ ! $exit_code -eq 0 ]; then
     log "ERROR" "Couldn't delete $origin_container" $log_file
     continue
@@ -133,4 +129,4 @@ for ((i=0; i<containers_count; i++)); do
   log "INFO" "Deleted container $origin_container" $log_file
 done
 
-log "SUCCESS" "---> Containers uploaded successfully <---" $log_file
+log "SUCCESS" "---> Containers uploaded <---" $log_file

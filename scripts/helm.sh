@@ -82,21 +82,22 @@ mkdir -p $tmp_chart
 
 # Download charts
 for ((i=0; i<charts_count; i++)); do
-    name=$(yq $charts_field[$i].name $config_file)
-    version=$(yq $charts_field[$i].version $config_file)
-    repo=$(yq $charts_field[$i].repo $config_file)
-    if [[ "$name" == "null" || "$version" == "null" || "$repo" == "null" ]]; then
-      log_error "One or more variables of the element $i in the list \"charts\" are null or unset. name: $name version: $version repo: $repo"
-      exit 1
-    fi
-    pull="helm pull $name --repo $repo --version $version --destination $tmp_chart"
-    log_info "$pull"
-    eval $pull
-    exit_code=$?
-    if [ ! $exit_code -eq 0 ]; then
-      log_error "Could not pull the chart"
-    fi
-    log_info "Chart $name pulled"
+  exit_code=0
+  name=$(yq $charts_field[$i].name $config_file)
+  version=$(yq $charts_field[$i].version $config_file)
+  repo=$(yq $charts_field[$i].repo $config_file)
+  if [[ "$name" == "null" || "$version" == "null" || "$repo" == "null" ]]; then
+    log_error "One or more variables of the element $i in the list \"charts\" are null or unset. name: $name version: $version repo: $repo"
+    continue
+  fi
+  pull="helm pull $name --repo $repo --version $version --destination $tmp_chart"
+  log_info "$pull"
+  eval $pull || exit_code=$?
+  if [ ! $exit_code -eq 0 ]; then
+    log_error "Could not pull the chart"
+    continue
+  fi
+  log_info "Chart $name pulled"
 done
 
 log "INFO" "Downloaded charts into .tmp folder" $log_file
@@ -104,26 +105,27 @@ log "INFO" "Downloaded charts into .tmp folder" $log_file
 # Copy local charts to tmp
 local_chart="$configs_path/charts"
 for file in "$local_chart"/*; do
-    if [ -f "$file" ]; then
-        cp "$file" "$tmp_chart/"
-    fi
+  if [ -f "$file" ]; then
+    cp "$file" "$tmp_chart/"
+  fi
 done
 
 log "INFO" "Copied local charts into .tmp folder" $log_file
 
 # Upload all the charts from the tmp folder
 for file in "$tmp_chart"/*; do   
-    yq -c '.destinations[]' $config_file | while read -r item; do
-        url=$(echo "$item" | yq -r '.url')
-        push="helm push $file $url$prefix"
-        log_info "$push"
-        eval $push
-        exit_code=$?
-        if [ ! $exit_code -eq 0 ]; then
-          log_error "Could not push the chart "
-        fi
-        log_info "Uploaded chart $file"
-    done
+  yq -c '.destinations[]' $config_file | while read -r item; do
+    exit_code=0
+    url=$(echo "$item" | yq -r '.url')
+    push="helm push $file $url$prefix"
+    log_info "$push"
+    eval $push || exit_code=$?
+    if [ ! $exit_code -eq 0 ]; then
+      log_error "Could not push the chart "
+      continue
+    fi
+    log_info "Uploaded chart $file"
+  done
 done
 
 # Removing tmp folder
