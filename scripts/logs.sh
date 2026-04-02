@@ -16,7 +16,6 @@ log() {
 	local timestamp=$(date +'%Y-%m-%d %H:%M:%S')
 	local log_entry="[$timestamp] [$level] $message"
 
-	# Color config
 	# Define colors
 	local LIGHT_BLUE='\033[0;34m'
 	local YELLOW='\033[0;33m'
@@ -62,7 +61,7 @@ log_file_name() {
 	if [ $# -lt 1 ]; then
 		log "ERROR" "1 argument is required: <name>"
 		exit 1
-	else
+	fi
 	local file_name="$1"
 	local timestamp=$(date +"%Y-%m-%d")
 	echo "${file_name}_${timestamp}.log"
